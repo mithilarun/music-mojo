@@ -21,17 +21,38 @@ import sys
 import urllib
 
 import base64
+import pymysql
 import requests
 
 
 CLIENT_ID = "bed1f40ecba8403fb22ddecc36bf628a"
 CLIENT_SECRET = "0f0f958fb06e4a5a92f4b2c70ea81f34"
+TRACK_TBL = "music_track_tbl"
+
+COUNT = 1
 
 
 def get_song_name():
     """Return the song name and artist"""
-    # Placeholder - Until final format of input file is known
-    return "24k Magic", "Bruno Mars"
+    connection = pymysql.connect(host=HOST,
+                                 user=USER,
+                                 password=PSWD,
+                                 db=DB,
+                                 charset="utf8mb4",
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            query = "SELECT track,song_id,artist FROM {} LIMIT 1 OFFSET {}".format(
+                    TRACK_TBL, COUNT)
+            cursor.execute(query)
+
+            COUNT += 1
+
+            for songid, track, artist in cursor:
+                return songid, track, artist
+    except pymysql.Error:
+        sys.exit(1)
 
 
 def get_api_token():
@@ -111,10 +132,12 @@ def main():
     # 4. Dump metadata JSON to output file
     #
     api_token = get_api_token()
-    song, artist = get_song_name()
-    song_id = get_song_id(song, artist)
-    meta_data = get_song_meta(song_id, api_token)
-    save_meta(meta_data)
+
+    while True:
+        tbl_id, song, artist = get_song_name()
+        song_id = get_song_id(song, artist)
+        meta_data = get_song_meta(song_id, api_token)
+        save_meta(tbl_id, meta_data)
 
 
 if __name__ == "__main__":
