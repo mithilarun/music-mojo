@@ -26,14 +26,20 @@ import requests
 
 
 CLIENT_ID = "bed1f40ecba8403fb22ddecc36bf628a"
-CLIENT_SECRET = "0f0f958fb06e4a5a92f4b2c70ea81f34"
+CLIENT_SECRET = "e4ef6918fa484813ac9108a16ab009fc"
 TRACK_TBL = "music_track_tbl"
+
+HOST = "localhost"
+USER = "root"
+PSWD = "musicmojo"
+DB = "song_recommender"
 
 COUNT = 1
 
 
 def get_song_name():
     """Return the song name and artist"""
+    global COUNT
     connection = pymysql.connect(host=HOST,
                                  user=USER,
                                  password=PSWD,
@@ -43,15 +49,19 @@ def get_song_name():
 
     try:
         with connection.cursor() as cursor:
-            query = "SELECT track,song_id,artist FROM {} LIMIT 1 OFFSET {}".format(
+            query = "SELECT title,song_id,artist_name FROM {} LIMIT 1 OFFSET {}".format(
                     TRACK_TBL, COUNT)
             cursor.execute(query)
 
             COUNT += 1
 
-            for songid, track, artist in cursor:
+            for artist, songid, track in cursor:
+                if track == 'title':
+                    continue
+                print songid, track, artist
                 return songid, track, artist
-    except pymysql.Error:
+    except pymysql.Error as err:
+        print "Something went wrong: {}. Exiting.".format(err)
         sys.exit(1)
 
 
