@@ -21,13 +21,15 @@ import sys
 import urllib
 
 import base64
-import pymysql
+#import pymysql
+import MySQLdb
 import requests
 
 
 CLIENT_ID = "bed1f40ecba8403fb22ddecc36bf628a"
 CLIENT_SECRET = "e4ef6918fa484813ac9108a16ab009fc"
 TRACK_TBL = "music_track_tbl"
+SPOTIFY_META_TBL = "spotify_meta"
 
 HOST = "localhost"
 USER = "root"
@@ -40,27 +42,27 @@ COUNT = 1
 def get_song_name():
     """Return the song name and artist"""
     global COUNT
-    connection = pymysql.connect(host=HOST,
+    connection = MySQLdb.connect(host=HOST,
                                  user=USER,
-                                 password=PSWD,
-                                 db=DB,
-                                 charset="utf8mb4",
-                                 cursorclass=pymysql.cursors.DictCursor)
+                                 passwd=PSWD,
+                                 db=DB)
 
+    cursor = connection.cursor()
     try:
-        with connection.cursor() as cursor:
-            query = "SELECT title,song_id,artist_name FROM {} LIMIT 1 OFFSET {}".format(
-                    TRACK_TBL, COUNT)
-            cursor.execute(query)
+        query = "SELECT title,song_id,artist_name FROM {} ".format(
+                TRACK_TBL) +\
+                "LIMIT 2 OFFSET {}".format(
+                COUNT)
+        cursor.execute(query)
 
-            COUNT += 1
+        COUNT += 1
 
-            for artist, songid, track in cursor:
-                if track == 'title':
-                    continue
-                print songid, track, artist
-                return songid, track, artist
-    except pymysql.Error as err:
+        for artist, songid, track in cursor:
+            if track == 'title':
+                continue
+            print songid, track, artist
+            return songid, track, artist
+    except MySQLdb.Error as err:
         print "Something went wrong: {}. Exiting.".format(err)
         sys.exit(1)
 
@@ -86,7 +88,7 @@ def get_song_id(song, artist):
     """Fetch Spotify ID of song using its name and artist"""
     if song == "":
         print "Song name empty. Cannot proceed"
-        sys.exit(1)
+        return False
 
     artist = urllib.quote(artist)
     song = urllib.quote(song)
@@ -96,12 +98,12 @@ def get_song_id(song, artist):
     response = requests.get(endpoint)
     if response.status_code != 200:
         print "Failed to get song name with error %s" %(response.status_code)
-        sys.exit(1)
+        return False
 
     response_list = json.loads(response.content)
     if  len(response_list["tracks"]["items"]) == 0:
         print "Not enough results from server"
-        sys.exit(1)
+        return False
 
     return response_list["tracks"]["items"][0]["id"]
 
@@ -120,13 +122,53 @@ def get_song_meta(song_id, api_token):
     if response.status_code != 200:
         print "Failed to get song attributes. Error code - %s" \
               %(response.status_code)
-        sys.exit(1)
+        return False
 
     response_list = json.loads(response.content)
     return response_list
 
 
-def save_meta(meta_data):
+def create_meta_table():
+    connection = MySQLdb.connect(host=HOST,
+                                 user=USER,
+                                 passwd=PSWD,
+                                 db=DB)
+
+    cursor = connection.cursor()
+
+    query = "CREATE TABLE {} (".format(SPOTIFY_META_TBL) +\
+            "meta_id int NOT NULL AUTO_INCREMENT, " +\
+            "song_id varchar(20), " +\
+            "danceability decimal(3,3), " +\
+            "energy decimal(3,3), " +\
+            "key int, " +\
+            "loudness decimal(3,3), " +\
+            "mode boolean, " +\
+            "speechiness decimal(3,3), " +\
+            "acousticness decimal(3,3), " +\
+            "instrumentalness decimal(3,3), " +\
+            "liveness decimal(3,3), " +\
+            "valence decimal(3,3), " +\
+            "tempo decimal(3,3), " +\
+            "type varchar(20), " +\
+            "id varchar(30), " +\
+            "uri varchar(50), " +\
+            "track_href varchar(100), " +\
+            "analysis_url varchar(100), " +\
+            "duration_ms int, " +\
+            "time_signature int, " +\
+            "PRIMARY KEY (meta_id), " +\
+            "FOREIGN KEY (song_id) REFERENCES {}(song_id))".format(TRACK_TBL)
+
+    try:
+        cursor.execute(query)
+        connection.commit()
+    except MySQLdb.Error as err:
+        print "Something bad happened while creating the meta table: {}".format(err)
+        sys.exit(1)
+
+
+def save_meta(tbl_id, meta_data):
     """Save generated Spotify metadata"""
     print meta_data
     return ""
@@ -141,13 +183,17 @@ def main():
     # 3. Using ID, fetch song metadata from Spotify
     # 4. Dump metadata JSON to output file
     #
+    create_meta_table()
     api_token = get_api_token()
 
     while True:
+        meta_data = False
         tbl_id, song, artist = get_song_name()
         song_id = get_song_id(song, artist)
-        meta_data = get_song_meta(song_id, api_token)
-        save_meta(tbl_id, meta_data)
+        if song_id is not False:
+		meta_data = get_song_meta(song_id, api_token)
+        if meta_data is not False:
+		save_meta(tbl_id, meta_data)
 
 
 if __name__ == "__main__":
