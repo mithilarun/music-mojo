@@ -21,8 +21,8 @@ import sys
 import MySQLdb
 
 import numpy
-import plot
-import scipy
+#import plot
+import scipy.cluster
 
 
 TRACK_TBL = "music_track_tbl"
@@ -44,11 +44,17 @@ def get_data():
     cursor = connection.cursor()
 
     try:
-        query = "SELECT * from {}".format(TRACK_TBL)
+        query = "SELECT tempo,music_track_tbl.key,loudness,mode,segments_loudness_max,music_track_tbl.`time signature` from {}".format(TRACK_TBL)
         cursor.execute(query)
 
         iterator = cursor.fetchall()
-        data = numpy.fromiter(iterator, numpy.float)
+        dt = numpy.dtype([('tempo', numpy.float32),
+                          ('music_track_tbl.key', numpy.int16),
+                          ('loudness', numpy.float32),
+                          ('mode', numpy.int16),
+                          ('segments_loudness_max', numpy.float32),
+                          ('music_track_tbl.`time signature`', numpy.int16)])
+        data = numpy.fromiter(iterator, dt)
         connection.close()
         return data
     except MySQLdb.Error as err:
@@ -66,10 +72,10 @@ def cluster():
     idx,_ = scipy.cluster.vq.vq(data, centroids)
 
     # plot the clusters to get a better idea of what it looks like
-    pylab.plot(data[idx==0,0], data[idx==0,1], 'ob',
-               data[idx==1,0], data[idx==1,1], 'or')
-    pylab.plot(centroids[:,0],centroids[:,1],'sg',markersize=8)
-    pylab.show()
+    #pylab.plot(data[idx==0,0], data[idx==0,1], 'ob',
+    #           data[idx==1,0], data[idx==1,1], 'or')
+    #pylab.plot(centroids[:,0],centroids[:,1],'sg',markersize=8)
+    #pylab.show()
 
 
 if __name__ == "__main__":
