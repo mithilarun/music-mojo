@@ -4,8 +4,12 @@ import glob
 import pymysql
 import numpy as np
 from sklearn import svm
-from song_tbl import *
+
+sys.path.insert(0, '../database/')
+from mysql_tbl_get import *
+
 from sklearn.metrics import accuracy_score
+
 train_start_val = 1
 train_end_val = 14000
 test_start_val = 14000
