@@ -32,7 +32,7 @@ USER = "root"
 PSWD = "musicmojo"
 DB = "song_recommender"
 
-K = 10
+K = 2
 
 
 def get_data():
@@ -54,7 +54,7 @@ def get_data():
                           ('mode', numpy.int16),
                           ('segments_loudness_max', numpy.float32),
                           ('music_track_tbl.`time signature`', numpy.int16)])
-        data = numpy.fromiter(iterator, dt)
+        data = numpy.fromiter(iterator, dt).astype(numpy.float)
         connection.close()
         return data
     except MySQLdb.Error as err:
@@ -63,19 +63,37 @@ def get_data():
         sys.exit(1)
 
 
+def write_out_clusters(idx):
+    tmp_mood_list = idx.tolist()
+    mood_list = map(str, tmp_mood_list)
+    connection = MySQLdb.connect(host=HOST,
+                                 user=USER,
+                                 passwd=PSWD,
+                                 db=DB)
+
+    cursor = connection.cursor()
+
+    try:
+        print len(mood_list)
+        query = "INSERT INTO {} (mood) VALUES (%s)".format(TRACK_TBL)
+        cursor.execute(query, [','.join(mood_list)]) 
+        connection.commit()
+        connection.close()
+    except MySQLdb.Error as err:
+        print "Failed to write out mood to DB: {}".format(err)
+        connection.close()
+        sys.exit(1)
+
+
 def cluster():
     # Compute k-means with K centroids
     data = get_data()
-    centroids,_ = scipy.cluster.vq.kmeans(data, K)
+    centroids,_ = scipy.cluster.vq.kmeans2(data, K)
 
     # assign each data point to a cluster
     idx,_ = scipy.cluster.vq.vq(data, centroids)
 
-    # plot the clusters to get a better idea of what it looks like
-    #pylab.plot(data[idx==0,0], data[idx==0,1], 'ob',
-    #           data[idx==1,0], data[idx==1,1], 'or')
-    #pylab.plot(centroids[:,0],centroids[:,1],'sg',markersize=8)
-    #pylab.show()
+    write_out_clusters(idx)
 
 
 if __name__ == "__main__":
