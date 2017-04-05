@@ -49,4 +49,16 @@ class ExtractFeatures:
 		finalData['train'] = result[:trainDataIndex]
 		finalData['test'] = result[trainDataIndex:]
 		return finalData
+
+
+	'''
+	Uses valence data from http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=6010
+	The dataset contains words marked in range [-5,5] 
+	'''
+	def getValenceDict(self):
+		valenceDict = dict(map(lambda (k,v): (k,int(v)), 
+                     [ line.split('\t') for line in open('./data/AFINN/AFINN-111.txt') ]))
+		return valenceDict
+
+		
 			
