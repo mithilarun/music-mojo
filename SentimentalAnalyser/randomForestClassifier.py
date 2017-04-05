@@ -14,5 +14,7 @@ class RandomForestClassifer:
 	def train(self):
 		extracter = ExtractFeatures('./data/reviewsData.txt')
 		self.valenceDict = extracter.getValenceDict()
-		print self.valenceDict
+		
+		tokenizedData = extracter.getTokenizedData()
 
+		print tokenizedData

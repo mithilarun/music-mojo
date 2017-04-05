@@ -1,7 +1,8 @@
-from nltk.tokenize import word_tokenize
 import nltk
+import re
 from nltk.corpus import stopwords
 from random import shuffle
+from nltk.tokenize import word_tokenize
 
 """
 Extracts features from the given file containing sentences and tags.
@@ -31,10 +32,20 @@ class ExtractFeatures:
 		for line in open(self.filePath):
 			
 			sentence, tag = line.split('\t')
+
+			# Remove all non letters from the sentence
+			# We need to rethink this logic since smileys and
+			# other emoticons will be usefull in sentimental 
+			# analysis.
+			sentence = re.sub("[^a-zA-Z]", " ", sentence) 
+
+			# Convert the sentence into list of words.
 			tokenizedlist = word_tokenize(sentence)
 
-			# Uncomment the below line to use stop words.
-			# tokenizedlist = [word for word in tokenizedlist if word not in stops]
+			# Remove all stop words
+			tokenizedlist = [word for word in tokenizedlist if word not in stops]
+
+			# Store the tokenized sentence and its tag to a list.
 			item = [tokenizedlist, tag.rstrip()]
 			result.append(item)
 
