@@ -66,4 +66,4 @@ class SentimentalAnalyzer:
 		return self.classifier.classify(self.word_feats(tokenizedwords))
 
 obj = SentimentalAnalyzer() 
-print obj.getSentiments('I just find myself happy with the simple things. Appreciating the blessings God gave me.')
+print obj.getSentiments('I am feeling happy')
