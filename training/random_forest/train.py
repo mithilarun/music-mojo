@@ -3,7 +3,7 @@ import os
 import glob
 import pymysql
 import numpy as np
-from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
 
 sys.path.insert(0, '../../database/')
 from mysql_tbl_get import *
@@ -20,7 +20,8 @@ trainlabels = song_tbl.gettrainlabels(train_start_val,train_end_val)
 #print(X)
 #print(y)
 #y = np.reshape(y,(1,1000))
-clf = svm.SVC()
+
+clf = RandomForestClassifier(n_estimators=10)
 clf.fit(traindata, trainlabels)
 
 testdata = song_tbl.gettraindata(test_start_val, test_end_val)
