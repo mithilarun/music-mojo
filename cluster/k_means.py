@@ -44,7 +44,7 @@ def get_data():
     cursor = connection.cursor()
 
     try:
-        query = "SELECT tempo,music_track_tbl.key,loudness,mode,segments_loudness_max,music_track_tbl.`time signature` from {}".format(TRACK_TBL)
+        query = "SELECT tempo,music_track_tbl.key,loudness,mode,segments_loudness_max,music_track_tbl.`time signature` from {} ORDER BY incrementing_id ASC".format(TRACK_TBL)
         cursor.execute(query)
 
         iterator = cursor.fetchall()
@@ -76,7 +76,7 @@ def write_out_clusters(idx):
     try:
         print len(mood_list)
         query = "INSERT INTO {} (mood) VALUES (%s)".format(TRACK_TBL)
-        cursor.execute(query, [','.join(mood_list)]) 
+        cursor.execute(query, [','.join(mood_list)])
         connection.commit()
         connection.close()
     except MySQLdb.Error as err:
@@ -93,7 +93,7 @@ def cluster():
     # assign each data point to a cluster
     idx,_ = scipy.cluster.vq.vq(data, centroids)
 
-    write_out_clusters(idx)
+    return idx
 
 
 if __name__ == "__main__":
