@@ -74,10 +74,13 @@ def write_out_clusters(idx):
     cursor = connection.cursor()
 
     try:
-        print len(mood_list)
-        query = "INSERT INTO {} (mood) VALUES (%s)".format(TRACK_TBL)
-        cursor.execute(query, [','.join(mood_list)])
-        connection.commit()
+        get_query = "SELECT incrementing_id from {} ORDER BY incrementing_id ASC".format(TRACK_TBL)
+        cursor.execute(get_query)
+        for incr_id, mood in zip(cursor, mood_list):
+            write_cursor = connection.cursor()
+            query = "INSERT INTO {} (mood) VALUES ({}) WHERE incrementing_id == {}".format(TRACK_TBL, mood, incr_id)
+            write_cursor.execute(query)
+            connection.commit()
         connection.close()
     except MySQLdb.Error as err:
         print "Failed to write out mood to DB: {}".format(err)
