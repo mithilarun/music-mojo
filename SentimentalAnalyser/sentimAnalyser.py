@@ -20,11 +20,11 @@ class SentimentalAnalyzer:
 		self.classifier = RandomForestClassifer()
 		# self.classifier = SentiNaiveBayesClassifier()
 		self.classifier.train()
-		
+		self.classifier.validateClassifier()
 	
 	# Return 1 if happy 0 if sad
 	def getSentiments(self, message):
 		return self.classifier.classify(message)
 
 obj = SentimentalAnalyzer() 
-print obj.getSentiments('I am feeling happy')
+print obj.getSentiments('I am feeling so loved and happy')

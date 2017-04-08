@@ -19,18 +19,30 @@ class SentiNaiveBayesClassifier:
 		tokenizedData = extracter.getTokenizedData()
 
 		trainingData = tokenizedData['train']
-		testData = tokenizedData['test']
+		
 
 		print ''
+		print 'Training Naive Bayes Classifier'
 		print 'Training data size = ', len(trainingData)
-		print 'Test data size = ', len(testData)
 		print ''
 
 		modifiedTrainingData = [(self.word_feats(item[0]), item[1]) for item in trainingData]
-		modifiedTestData = [(self.word_feats(item[0]), item[1]) for item in testData]
-
 		self.classifier = NaiveBayesClassifier.train(modifiedTrainingData)
-		print 'accuracy:', nltk.classify.util.accuracy(self.classifier, modifiedTestData)
+		print 'Training Naive Bayes Classifier Completed'
+
+	def validateClassifier(self):
+
+		extracter = ExtractFeatures('./data/reviewsData.txt')
+		tokenizedData = extracter.getTokenizedData()
+		testData = tokenizedData['test']
+
+		print ''
+		print 'Validating Naive Bayes Classifier'
+		print 'Test data size = ', len(testData)
+		print ''
+
+		modifiedTestData = [(self.word_feats(item[0]), item[1]) for item in testData]
+		print 'Accuracy: ', nltk.classify.util.accuracy(self.classifier, modifiedTestData)
 
 	def word_feats(self, words):
 		return dict([(word, True) for word in words])
