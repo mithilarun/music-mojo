@@ -27,4 +27,11 @@ class SentimentalAnalyzer:
 		return self.classifier.classify(message)
 
 obj = SentimentalAnalyzer() 
-print obj.getSentiments('I am feeling so loved and happy')
+messages = ['There was a time in life when I was walking alone a road and found no value in life, but now I feel so much better and happy.',
+'There was a time in life when I was walking alone a road and found no value in life.',
+'I am feeling so relived',
+'I am feeling so awesome', 
+'I am so worried']
+
+for status in messages:
+	print 'Predicted: ', 'HAPPY'.ljust(10) if obj.getSentiments(status) == '1' else 'SAD'.ljust(10), status.rjust(0)

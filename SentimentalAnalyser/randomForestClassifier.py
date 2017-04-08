@@ -2,6 +2,7 @@ from extractFeatures import ExtractFeatures
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+import numpy as np
 
 '''
 	Uses bag of words and valence value as features
@@ -14,6 +15,12 @@ class RandomForestClassifer:
 		self.valenceDict = {}
 		self.classifier = None
 		self.countVectorizer = None
+
+	'''
+	Takes the training data and counts the occurance of a word.
+	Valence score is also added as a feature.
+	This is feed into a Random Forest classifier.
+	'''
 	def train(self):
 		
 		extracter = ExtractFeatures('./data/reviewsData.txt')
@@ -29,20 +36,35 @@ class RandomForestClassifer:
 
 		train_wordList = []
 		train_labels = []
+		valence_values_training = []
+
+		# Convert the word list into a sentence space separated.
 		for item in trainingData:
 			train_wordList.append(" ".join( item[0] ))
 			train_labels.append(item[1])
 
+			# Calculate the valence for this sentence.
+			valSum = 0
+			for word in item[0]:
+				valSum += self.valenceDict.get(word, 0)
+			
+			valence_values_training.append(valSum)
+
+		# Count the occurance of words in the sentenes.
 		self.countVectorizer = CountVectorizer(analyzer = "word",   \
                              tokenizer = None,    \
                              preprocessor = None, \
                              stop_words = None,   \
                              max_features = 5000) 
 		countFeatures = self.countVectorizer.fit_transform(train_wordList)
-		
+		featuresArray = countFeatures.toarray()
 
+		# Add valence score as a last feature.
+		featuresArray_Valence = np.c_[featuresArray,valence_values_training]
+		
+		# Train the classifier
 		self.classifier = RandomForestClassifier(n_estimators = 50) 
-		self.classifier = self.classifier.fit(countFeatures.toarray(), train_labels)
+		self.classifier = self.classifier.fit(featuresArray_Valence, train_labels)
 		print 'Training Random Forest Classifier Completed'
 		
 
@@ -59,20 +81,38 @@ class RandomForestClassifer:
 
 		test_wordList = []
 		test_labels = []
+		valence_values_test = []
+
+		# Convert the word list into a sentence space separated.
 		for item in testData:
 			test_wordList.append(" ".join( item[0] ))
 			test_labels.append(item[1])
+			
+			# Calculate the valence for this sentence.
+			valSum = 0
+			for word in item[0]:
+				valSum += self.valenceDict.get(word, 0)
+			
+			valence_values_test.append(valSum)
+
+		# Count the occurance of words in the sentenes using the vectorizer.
 		countTestFeatures = self.countVectorizer.transform(test_wordList)
-		predictedVal = self.classifier.predict(countTestFeatures.toarray())
+		testF = np.c_[countTestFeatures.toarray(), valence_values_test]
+		predictedVal = self.classifier.predict(testF)
 		
 		score = accuracy_score(test_labels,predictedVal)
 		print 'Accuracy: ', score
 
 	def classify(self, statusMessage):
-		print statusMessage
+
+		# Calculate the valence for this sentence.
+		valSum = 0
+		for word in statusMessage.split():
+			valSum += self.valenceDict.get(word, 0)
+
 		countFeatures = self.countVectorizer.transform([statusMessage])
-		print 'countFeatures: ',countFeatures
-		val = self.classifier.predict(countFeatures.toarray())
-		print 'Prediction: ', val
+		featuresArray = countFeatures.toarray()
+		featuresArray_Valence = np.c_[featuresArray,[valSum]]
+		val = self.classifier.predict(featuresArray_Valence)
 		return val[0]
 
