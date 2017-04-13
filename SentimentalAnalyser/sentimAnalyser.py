@@ -1,33 +1,36 @@
 
+from naiveBayesClassifier import SentiNaiveBayesClassifier
+from randomForestClassifier import RandomForestClassifer
 
-from nltk.tokenize import word_tokenize
-import nltk
-from extractFeatures import ExtractFeatures
+"""
+Class that generate the sentiment of the given sentence.
 
+Initializing the class will train the classifier with the 
+training data.
+
+Then you can use the method getSEntiments(message) to get the sentiment 
+value.
+
+"""
 class SentimentalAnalyzer:
 
 	def __init__(self):
-		self.valenceDict = {}
-		self.initializeValenceDict()
-
-	# Uses valence data from http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=6010
-	# The dataset contains words marked in range [-5,5] 
-	def initializeValenceDict(self):
-		for line in open('./data/AFINN/AFINN-111.txt'):
-			word, valenceValue = line.split('\t')
-			self.valenceDict[word] = int(valenceValue.rstrip())
-		self.trainNaiveBayes()
 		
-
-	def trainNaiveBayes(self):
-		# Get data from the 
-		extracter = ExtractFeatures('./data/reviewsData.txt')
-		extracter.getTokenizedData()
-
+		self.classifier = RandomForestClassifer()
+		# self.classifier = SentiNaiveBayesClassifier()
+		self.classifier.train()
+		self.classifier.validateClassifier()
+	
 	# Return 1 if happy 0 if sad
 	def getSentiments(self, message):
-		tokenizedwords = word_tokenize(message)
-		return 1
+		return self.classifier.classify(message)
 
 obj = SentimentalAnalyzer() 
-obj.getSentiments('hello there i am here')
+messages = ['There was a time in life when I was walking alone a road and found no value in life, but now I feel so much better and happy.',
+'There was a time in life when I was walking alone a road and found no value in life.',
+'I am feeling so relived',
+'I am feeling so awesome', 
+'I am so worried']
+
+for status in messages:
+	print 'Predicted: ', 'HAPPY'.ljust(10) if obj.getSentiments(status) == '1' else 'SAD'.ljust(10), status.rjust(0)
