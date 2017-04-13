@@ -1,5 +1,4 @@
 
-
 from naiveBayesClassifier import SentiNaiveBayesClassifier
 from randomForestClassifier import RandomForestClassifer
 from svm_w2vec import SVM_Word2Vec
