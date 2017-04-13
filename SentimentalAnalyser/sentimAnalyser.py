@@ -1,6 +1,7 @@
 
 from naiveBayesClassifier import SentiNaiveBayesClassifier
 from randomForestClassifier import RandomForestClassifer
+from svm import SVM
 
 """
 Class that generate the sentiment of the given sentence.
@@ -16,8 +17,9 @@ class SentimentalAnalyzer:
 
 	def __init__(self):
 		
-		self.classifier = RandomForestClassifer()
+		# self.classifier = RandomForestClassifer()
 		# self.classifier = SentiNaiveBayesClassifier()
+		self.classifier = SVM()
 		self.classifier.train()
 		self.classifier.validateClassifier()
 	
