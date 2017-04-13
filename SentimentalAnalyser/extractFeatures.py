@@ -5,6 +5,12 @@ from nltk.corpus import stopwords
 from random import shuffle
 from nltk.tokenize import word_tokenize
 
+import numpy as np
+from gensim.models import word2vec
+from gensim.models.keyedvectors import KeyedVectors
+
+
+
 """
 Extracts features from the given file containing sentences and tags.
 
@@ -20,9 +26,12 @@ the list of words in that sentence and the tag.
 
 class ExtractFeatures:
 
+	FEATURE_SIZE_WORD2VEC = 300
 
 	def __init__(self, filePath):
 		self.filePath = filePath
+		self.word2vecModel = None
+		self.finalData = {}
 
 	def getTokenizedData(self):
 		
@@ -56,12 +65,65 @@ class ExtractFeatures:
 		
 		finalData = {}
 		count = len(result)
+
 		percentageOfTrainingData = 0.8
+
 		trainDataIndex = int(count * percentageOfTrainingData)
 
 		finalData['train'] = result[:trainDataIndex]
 		finalData['test'] = result[trainDataIndex:]
+
+		self.finalData = finalData
 		return finalData
+
+	'''
+	Train the word2vec model with a list of list of words.
+	'''
+	def generateWord2Vec(self, tokensizedSentenceList):
+		
+		# self.word2vecModel = word2vec.Word2Vec(tokensizedSentenceList, \
+		# 	workers = 2, \
+		# 	size = ExtractFeatures.FEATURE_SIZE_WORD2VEC, \
+		# 	min_count = 10, \
+  #           window = 5, \
+  #           sample = 0.001)
+		# self.word2vecModel.init_sims(replace=True)
+		self.word2vecModel = KeyedVectors.load_word2vec_format('./data/GoogleWord2Vec/GoogleNews-vectors-negative300.bin', binary=True)
+
+	def word2vec(self, word):
+		return self.word2vecModel[word]
+
+	'''
+	Pass a sentence, the function will return the average
+	word2vec value for the words.
+	'''
+	def generateAvgWord2Vec(self, sentence):
+		
+		# Convert the sentence into list of words.
+		tokenizedlist = word_tokenize(sentence)
+		
+		
+		vectorValueSum = np.zeros((ExtractFeatures.FEATURE_SIZE_WORD2VEC,),dtype="float32")
+		
+
+		count = 0
+		
+		for word in tokenizedlist:
+				
+				count = count + 1.
+				try:
+					vectorValueSum = np.add(vectorValueSum,self.word2vec(word))
+				except KeyError:
+					
+					count = count - 1.
+
+		
+		result = vectorValueSum
+		if count > 0:
+			
+			result = np.divide(vectorValueSum,count)
+		return result
+
 
 
 	'''
