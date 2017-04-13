@@ -1,7 +1,9 @@
 
 from naiveBayesClassifier import SentiNaiveBayesClassifier
 from randomForestClassifier import RandomForestClassifer
+from rfngram import RandomForestnGramClassifer
 from svm_w2vec import SVM_Word2Vec
+from lstm import RNTNLSTMClassifier
 
 """
 Class that generate the sentiment of the given sentence.
@@ -17,7 +19,7 @@ class SentimentalAnalyzer:
 
 	def __init__(self):
 		
-		self.classifier = SVM_Word2Vec()
+		self.classifier = RandomForestClassifer()
 		# self.classifier = SentiNaiveBayesClassifier()
 		self.classifier.train()
 		self.classifier.validateClassifier()

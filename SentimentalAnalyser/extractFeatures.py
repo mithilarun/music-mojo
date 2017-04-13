@@ -6,6 +6,7 @@ from random import shuffle
 from nltk.tokenize import word_tokenize
 import numpy as np
 from gensim.models import word2vec
+from gensim.models.keyedvectors import KeyedVectors
 
 """
 Extracts features from the given file containing sentences and tags.
@@ -22,7 +23,7 @@ the list of words in that sentence and the tag.
 
 class ExtractFeatures:
 
-	FEATURE_SIZE_WORD2VEC = 500
+	FEATURE_SIZE_WORD2VEC = 300
 
 	def __init__(self, filePath):
 		self.filePath = filePath
@@ -61,7 +62,7 @@ class ExtractFeatures:
 		
 		finalData = {}
 		count = len(result)
-		percentageOfTrainingData = 0.8
+		percentageOfTrainingData = 0.1
 		trainDataIndex = int(count * percentageOfTrainingData)
 
 		finalData['train'] = result[:trainDataIndex]
@@ -74,13 +75,14 @@ class ExtractFeatures:
 	'''
 	def generateWord2Vec(self, tokensizedSentenceList):
 		
-		self.word2vecModel = word2vec.Word2Vec(tokensizedSentenceList, \
-			workers = 2, \
-			size = ExtractFeatures.FEATURE_SIZE_WORD2VEC, \
-			min_count = 10, \
-            window = 10, \
-            sample = 0.001)
-		self.word2vecModel.init_sims(replace=True)
+		# self.word2vecModel = word2vec.Word2Vec(tokensizedSentenceList, \
+		# 	workers = 2, \
+		# 	size = ExtractFeatures.FEATURE_SIZE_WORD2VEC, \
+		# 	min_count = 10, \
+  #           window = 5, \
+  #           sample = 0.001)
+		# self.word2vecModel.init_sims(replace=True)
+		self.word2vecModel = KeyedVectors.load_word2vec_format('./data/GoogleWord2Vec/GoogleNews-vectors-negative300.bin', binary=True)
 
 	def word2vec(self, word):
 		return self.word2vecModel[word]
@@ -93,23 +95,26 @@ class ExtractFeatures:
 		
 		# Convert the sentence into list of words.
 		tokenizedlist = word_tokenize(sentence)
-		word_vectors = self.word2vecModel.wv
+		
 		
 		vectorValueSum = np.zeros((ExtractFeatures.FEATURE_SIZE_WORD2VEC,),dtype="float32")
 		
 
 		count = 0
+		
 		for word in tokenizedlist:
-			
+				
 				count = count + 1.
 				try:
-					vectorValueSum = np.add(vectorValueSum,word_vectors[word])
+					vectorValueSum = np.add(vectorValueSum,self.word2vec(word))
 				except KeyError:
+					
 					count = count - 1.
 
 		
 		result = vectorValueSum
 		if count > 0:
+			
 			result = np.divide(vectorValueSum,count)
 		return result
 

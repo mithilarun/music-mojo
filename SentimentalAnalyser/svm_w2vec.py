@@ -25,7 +25,7 @@ class SVM_Word2Vec:
 		trainingData = tokenizedData['train']
 
 		print ''
-		print 'Training SVM with Word 2 vec  Classifier'
+		print 'Training SVM with Word2vec  Classifier'
 		print 'Training data size = ', len(trainingData)
 		print ''
 
@@ -37,8 +37,9 @@ class SVM_Word2Vec:
 		for item in trainingData:
 			train_wordList.append(item[0])
 
-		self.extracter.generateWord2Vec(train_wordList)
 
+		self.extracter.generateWord2Vec(train_wordList)
+		
 		# Convert the sentences to vec
 		train_data_svm = []
 		for item in trainingData:
@@ -47,6 +48,7 @@ class SVM_Word2Vec:
 			train_data_svm.append(self.extracter.generateAvgWord2Vec(space_sep_sent))
 		
 		self.classifier = SVC(kernel='poly', degree=2, C=C)
+
 		self.classifier.fit(train_data_svm, train_labels)
 		
 		print 'Training SVM with Word 2 vec  Classifier Completed'
@@ -77,6 +79,6 @@ class SVM_Word2Vec:
 	def classify(self, statusMessage):
 		features = self.extracter.generateAvgWord2Vec(statusMessage)
 		predictedVal = self.classifier.predict([features])
-		
-		return predictedVal
+		print predictedVal
+		return predictedVal[0]
 
