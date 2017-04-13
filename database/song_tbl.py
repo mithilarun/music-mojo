@@ -9,24 +9,25 @@ class song_tbl():
     def __init__(self, x):
         self.inc_id = x[0]
         self.song_id = x[1]
-        self.title = x[2]
-        self.artist_familiarity = x[3]
-        self.artist_hotness = x[4]
-        self.song_hotness = x[5]
-        self.tempo = x[6]
-        self.key = x[7]
-        self.loudness = x[8]
-        self.mode = x[9]
-        self.segments_loudness_max = x[10]
-        self.time_signature = x[11]
-        self.word_frequency = x[12]
-        self.mood = x[13]
+        self.artist_name = x[2]
+        self.title = x[3]
+        self.artist_familiarity = x[4]
+        self.artist_hotness = x[5]
+        self.song_hotness = x[6]
+        self.tempo = x[7]
+        self.key = x[8]
+        self.loudness = x[9]
+        self.mode = x[10]
+        self.segments_loudness_max = x[11]
+        self.time_signature = x[12]
+        self.word_frequency = x[13]
+        self.mood = x[14]
 
     #initialize a connection to song_recommender database
     @classmethod
     def init(cls):
         global conn
-        conn = pymysql.connect(host= 'localhost', user='root', passwd='password', db='song_recommender')
+        conn = pymysql.connect(host= 'localhost', user='root', passwd='musicmojo', db='song_recommender')
 
     #get a single row from song table using song_id
     @classmethod
@@ -50,7 +51,7 @@ class song_tbl():
     @classmethod
     def getRowsByIdRange(cls, id_start, id_end):
         cursor = conn.cursor()
-        query = "SELECT * FROM music_track_tbl WHERE incrementing_id BETWEEN %s AND %s"
+        query = "SELECT * FROM music_track_tbl WHERE incrementing_id BETWEEN %s AND %s order by incrementing_id asc"
         cursor.execute(query, (id_start, id_end))
         data = cursor.fetchall()
         return data
@@ -59,11 +60,73 @@ class song_tbl():
     @classmethod
     def getSong(cls, x):
         return cls(x)
-
+    
     #run a query on the table
     @classmethod
     def runquery(cls, query):
         cursor = conn.cursor()
         cursor.execute(query)
-        data = cursor.fetchall()
+        data = list(cursor.fetchall())
+        data = [list(elem) for elem in data]
         return data
+
+    @classmethod
+    def insert(cls, query):
+        cursor = conn.cursor()
+        cursor.execute(query)
+        conn.commit()
+
+    @classmethod
+    def gettraindata(cls, id_start, id_end):
+        cursor = conn.cursor()
+        query = "SELECT tempo,music_track_tbl.key,loudness,mode,segments_loudness_max,music_track_tbl.`time signature` from music_track_tbl where incrementing_id between %s and %s order by incrementing_id asc"
+        cursor.execute(query, (id_start, id_end))
+        data = list(cursor.fetchall())
+        data = [list(elem) for elem in data]
+        return data
+
+    @classmethod
+    def gettrainlabels(cls, id_start, id_end):
+        cursor = conn.cursor()
+        query = "SELECT mood from music_track_tbl where incrementing_id between %s and %s order by incrementing_id asc"
+        cursor.execute(query, (id_start, id_end))
+        data = list(cursor.fetchall())
+        data = [elem[0] for elem in data]
+        return data
+
+    @classmethod
+    def getDataFromList(cls, inpList):
+        cursor = conn.cursor()
+        query = "SELECT tempo,music_track_tbl.key,loudness,mode,segments_loudness_max,music_track_tbl.`time signature` from music_track_tbl where incrementing_id in {} order by incrementing_id asc".format(tuple(inpList))
+        cursor.execute(query)
+        data = list(cursor.fetchall())
+        data = [list(elem) for elem in data]
+        return data
+
+    @classmethod
+    def getLabelsFromList(cls, inpList):
+        cursor = conn.cursor()
+        query = "SELECT mood from music_track_tbl where incrementing_id in {} order by incrementing_id asc".format(tuple(inpList))
+        cursor.execute(query)
+        data = list(cursor.fetchall())
+        data = [elem[0] for elem in data]
+        return data
+
+    @classmethod
+    def getDataNotInList(cls, inpList):
+        cursor = conn.cursor()
+        query = "SELECT tempo,music_track_tbl.key,loudness,mode,segments_loudness_max,music_track_tbl.`time signature` from music_track_tbl where incrementing_id not in {} order by incrementing_id asc".format(tuple(inpList))
+        cursor.execute(query)
+        data = list(cursor.fetchall())
+        data = [list(elem) for elem in data]
+        return data
+
+    @classmethod
+    def getLabelsNotInList(cls, inpList):
+        cursor = conn.cursor()
+        query = "SELECT mood from music_track_tbl where incrementing_id not in {} order by incrementing_id asc".format(tuple(inpList))
+        cursor.execute(query)
+        data = list(cursor.fetchall())
+        data = [elem[0] for elem in data]
+        return data
+    

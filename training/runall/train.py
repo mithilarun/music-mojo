@@ -7,9 +7,10 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import linear_model
 from sklearn import neighbors,datasets
-from song_tbl import *
 from sklearn.metrics import accuracy_score
 import random
+sys.path.append('../../database')
+from song_tbl import *
 
 song_tbl.init()
 count = song_tbl.runquery("select count(*) from music_track_tbl")
