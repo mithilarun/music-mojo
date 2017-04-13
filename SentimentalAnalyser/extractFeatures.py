@@ -1,3 +1,4 @@
+
 import nltk
 import re
 from nltk.corpus import stopwords
@@ -16,6 +17,7 @@ the list of words in that sentence and the tag.
 
 ]
 """
+
 class ExtractFeatures:
 
 
@@ -70,6 +72,3 @@ class ExtractFeatures:
 		valenceDict = dict(map(lambda (k,v): (k,int(v)), 
                      [ line.split('\t') for line in open('./data/AFINN/AFINN-111.txt') ]))
 		return valenceDict
-
-		
-			
