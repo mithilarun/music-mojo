@@ -4,6 +4,8 @@ from randomForestClassifier import RandomForestClassifer
 from rfngram import RandomForestnGramClassifer
 from svm_w2vec import SVM_Word2Vec
 from lstm import RNTNLSTMClassifier
+from svm import SVM
+
 
 """
 Class that generate the sentiment of the given sentence.
@@ -19,8 +21,12 @@ class SentimentalAnalyzer:
 
 	def __init__(self):
 		
+
 		self.classifier = RandomForestClassifer()
 		# self.classifier = SentiNaiveBayesClassifier()
+		# self.classifier = RandomForestClassifer()
+		# self.classifier = SentiNaiveBayesClassifier()
+
 		self.classifier.train()
 		self.classifier.validateClassifier()
 	
@@ -37,6 +43,7 @@ messages = ['There was a time in life when I was walking alone a road and found 
 'a hot girl outside',
 'its very hot outside',
 'This movie was actually neither that funny, nor super witty.']
+
 
 for status in messages:
 	print 'Predicted: ', 'HAPPY'.ljust(10) if obj.getSentiments(status) == '1' else 'SAD'.ljust(10), status.rjust(0)

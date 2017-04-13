@@ -4,9 +4,12 @@ import re
 from nltk.corpus import stopwords
 from random import shuffle
 from nltk.tokenize import word_tokenize
+
 import numpy as np
 from gensim.models import word2vec
 from gensim.models.keyedvectors import KeyedVectors
+
+
 
 """
 Extracts features from the given file containing sentences and tags.
@@ -62,11 +65,14 @@ class ExtractFeatures:
 		
 		finalData = {}
 		count = len(result)
-		percentageOfTrainingData = 0.1
+
+		percentageOfTrainingData = 0.8
+
 		trainDataIndex = int(count * percentageOfTrainingData)
 
 		finalData['train'] = result[:trainDataIndex]
 		finalData['test'] = result[trainDataIndex:]
+
 		self.finalData = finalData
 		return finalData
 
@@ -117,6 +123,7 @@ class ExtractFeatures:
 			
 			result = np.divide(vectorValueSum,count)
 		return result
+
 
 
 	'''
